@@ -21,7 +21,7 @@ model {
 	repositories {
 		lib(PrebuiltLibraries) {
 			cpplib {
-				headers.srcDir "${rootDir}/src/cpplib"
+				headers.srcDir "${rootDir}/include/cpplib"
 				binaries.withType(SharedLibraryBinary) {
 					sharedLibraryFile = file("${rootDir}/lib/cpplib.dll")
 					/*if(file("${rootDir}/lib/THIRD_PARTY_LIB.lib").exists() ) {
