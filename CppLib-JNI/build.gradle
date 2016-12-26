@@ -1,0 +1,122 @@
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'cpp'
+
+buildscript {
+    repositories {
+		mavenCentral()
+        mavenLocal()
+        jcenter()
+    }
+}
+
+jar {
+    baseName = 'CppLibJNI'
+    version =  '0.0.1'
+    manifest {
+        attributes 'Main-Class': 'com.tariqmnasim.jnitest.CppLibJNITest'
+    }
+}
+
+repositories {
+    mavenLocal()
+	maven { url "https://repo1.maven.org/maven2" }
+
+}
+
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file("$buildDir/classes/main/")
+    }
+}
+
+test {
+    jvmArgs += [ "-Xmx1024M" ]
+}
+
+println "Building on OS: " + System.properties['os.name']
+println "Using JDK: " + System.properties['java.home']
+
+def SYS_JDK_DIR = this.properties['system.jdk.dir']
+
+println "Using system jdk directory : " + SYS_JDK_DIR
+
+model {
+    buildTypes {
+        debug
+        release
+    }
+
+    platforms {
+        x86 {
+            architecture "x86"
+        }
+        x64 {
+            architecture "x86_64"
+        }
+        itanium {
+            architecture "ia-64"
+        }
+    }
+	
+	repositories {
+		
+		lib(PrebuiltLibraries) {
+			cpplib {
+				headers.srcDir "${rootDir}/include/cpplib"
+				binaries.withType(SharedLibraryBinary) {
+					sharedLibraryFile = file("${rootDir}/lib/cpplib.dll")
+					/*if(file("${rootDir}/lib/cpplib.lib").exists() ) {
+						sharedLibraryLinkFile = file("${rootDir}/lib/cpplib.lib")
+					}*/
+				}
+			}
+			JDK {
+				headers.srcDirs SYS_JDK_DIR+"/include",
+				SYS_JDK_DIR + "/include/win32",
+				SYS_JDK_DIR + "/include/win32/bridge"
+			}
+		}
+	}
+
+    components {
+        CppLibJNI(NativeLibrarySpec) {
+        	sources {
+        		cpp {
+        			source {
+        				lib library: "cpplib", linkage: 'shared'
+						lib library: "JDK", linkage: 'api'
+        				srcDirs 'src/main/cpp', 'src/main/headers', 'src/main/jni'
+        				include "**/*.cpp"
+        			}
+        		}
+        	}
+			buildTypes {
+				debug
+				release
+			}
+        }
+    }
+	
+	toolChains {
+		gcc(Gcc) {
+			eachPlatform {
+				cppCompiler.withArguments { args ->
+					args << "-I" + "${rootDir}/src/main/cpp"
+					args << "-I" + "${rootDir}/src/main/headers"
+					args << "-I" + "${rootDir}/src/main/jni"
+					args << "-I" + "${rootDir}/src/cpplib"
+				}
+				linker.withArguments { args ->
+					/** Tese arguments are IMPORTANT **/
+					args << "-Wl,--add-stdcall-alias"
+				}
+			}
+		}
+	}
+}
