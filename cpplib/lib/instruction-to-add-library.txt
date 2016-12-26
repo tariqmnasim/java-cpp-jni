@@ -1,0 +1,1 @@
+In order to use a third-party native library with 'cpplib' project, put the library dll/lib in this folder and update build.gradle file accordingly.
