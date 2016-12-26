@@ -1,0 +1,46 @@
+apply plugin: 'cpp'
+
+model {
+    buildTypes {
+        debug
+        release
+    }
+
+    platforms {
+        x86 {
+            architecture "x86"
+        }
+        x64 {
+            architecture "x86_64"
+        }
+        itanium {
+            architecture "ia-64"
+        }
+    }
+	
+	repositories {
+		/*lib(PrebuiltLibraries) {
+			THIRD_PARTY_LIB {
+				headers.srcDir "${rootDir}/src/bioaccess/headers/"
+				binaries.withType(SharedLibraryBinary) {
+					sharedLibraryFile = file("${rootDir}/lib/THIRD_PARTY_LIB.dll")
+					if(file("${rootDir}/lib/THIRD_PARTY_LIB.lib").exists() ) {
+						sharedLibraryLinkFile = file("${rootDir}/lib/THIRD_PARTY_LIB.lib")
+					}
+				}
+			}
+		}*/
+	}
+
+    components {
+        cpplib(NativeLibrarySpec){			
+            /*binaries.all {
+				lib library: "THIRD_PARTY_LIB", linkage: 'shared'
+            }*/
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.13'
+}

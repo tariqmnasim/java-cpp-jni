@@ -1,0 +1,71 @@
+apply plugin: 'cpp'
+
+model {
+    buildTypes {
+        debug
+        release
+    }
+
+    platforms {
+        x86 {
+            architecture "x86"
+        }
+        x64 {
+            architecture "x86_64"
+        }
+        itanium {
+            architecture "ia-64"
+        }
+    }
+	
+	repositories {
+		lib(PrebuiltLibraries) {
+			cpplib {
+				headers.srcDir "${rootDir}/src/cpplib"
+				binaries.withType(SharedLibraryBinary) {
+					sharedLibraryFile = file("${rootDir}/lib/cpplib.dll")
+					/*if(file("${rootDir}/lib/THIRD_PARTY_LIB.lib").exists() ) {
+						sharedLibraryLinkFile = file("${rootDir}/lib/cpplib.lib")
+					}*/
+				}
+			}
+		}
+	}
+
+    components {
+        TestCppLib(NativeExecutableSpec){
+        	sources {
+        		cpp {
+        			source {
+        				lib library: "cpplib", linkage: 'shared'
+        				srcDirs 'src/main/cpp', 'src/main/headers'
+        				include "**/*.cpp"
+        			}
+        		}
+        	}
+			buildTypes {
+				debug
+				release
+			}
+        }
+    }
+	
+	toolChains {
+		gcc(Gcc) {
+			eachPlatform {
+				cppCompiler.withArguments { args ->
+					args << "-I" + "${rootDir}/src/main/cpp"
+					args << "-I" + "${rootDir}/src/main/headers"
+					args << "-I" + "${rootDir}/src/cpplib"
+				}
+				/*linker.withArguments { args ->
+					args << "-Wl,--add-stdcall-alias"
+				}*/
+			}
+		}
+	}
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.13'
+}
